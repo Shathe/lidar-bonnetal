@@ -20,13 +20,13 @@ Dataset configuration files are located at [config/labels](config/labels/)
 To visualize the data (in this example sequence 00):
 
 ```sh
-$ ./visualize.py -d /path/to/dataset/ -s 00
+$ ./visualize.py -d /home/snowflake/Downloads/SemanticKitti/data_odometry_velodyne/dataset/ -s 00
 ```
 
 To visualize the predictions (in this example sequence 00):
 
 ```sh
-$ ./visualize.py -d /path/to/dataset/ -p /path/to/predictions/ -s 00
+$ ./visualize.py -d /home/snowflake/Downloads/SemanticKitti/data_odometry_velodyne/dataset/ -p /home/snowflake/Downloads/darknet53 -s 00
 ```
 
 ### Training
@@ -57,7 +57,7 @@ And acccessing [http://localhost:5555](http://localhost:5555) in your browser.
 To infer the predictions for the entire dataset:
 
 ```sh
-$ ./infer.py -d /path/to/dataset/ -l /path/for/predictions -m /path/to/model
+$ ./infer.py -d /home/snowflake/Downloads/SemanticKitti/data_odometry_velodyne/dataset/ -l /path/for/predictions -m /path/to/model
 ````
 
 ### Evaluation
@@ -65,13 +65,13 @@ $ ./infer.py -d /path/to/dataset/ -l /path/for/predictions -m /path/to/model
 To evaluate the overall IoU of the point clouds (of a specific split, which in semantic kitti can only be train and valid, since test is only run in our evaluation server):
 
 ```sh
-$ ./evaluate_iou.py -d /path/to/dataset -p /path/to/predictions/ --split valid
+$ ./evaluate_iou.py -d /path/to/dataset -p /home/snowflake/Downloads/darknet53 --split valid
 ```
 
 To evaluate the border IoU of the point clouds (introduced in RangeNet++ paper):
 
 ```sh
-$ ./evaluate_biou.py -d /path/to/dataset -p /path/to/predictions/ --split valid --border 1 --conn 4
+$ ./evaluate_biou.py -d /path/to/dataset -p /home/snowflake/Downloads/darknet53 --split valid --border 1 --conn 4
 ```
 
 ## Pre-trained Models
