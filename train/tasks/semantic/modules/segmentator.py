@@ -77,8 +77,9 @@ class Segmentator(nn.Module):
     # print number of parameters and the ones requiring gradients
     weights_total = sum(p.numel() for p in self.parameters())
     weights_grad = sum(p.numel() for p in self.parameters() if p.requires_grad)
-    print("Total number of parameters: ", weights_total)
+    print("Total number of parameters (M): ", weights_total/1000000.)
     print("Total number of parameters requires_grad: ", weights_grad)
+
 
     # breakdown by layer
     weights_enc = sum(p.numel() for p in self.backbone.parameters())

@@ -76,6 +76,7 @@ class Trainer():
       x_cl = self.parser.to_xentropy(cl)  # map actual class to xentropy class
       content[x_cl] += freq
     self.loss_w = 1 / (content + epsilon_w)   # get weights
+    self.loss_w = np.power(self.loss_w, 0.50)
     for x_cl, w in enumerate(self.loss_w):  # ignore the ones necessary to ignore
       if DATA["learning_ignore"][x_cl]:
         # don't weigh
@@ -153,6 +154,30 @@ class Trainer():
                               warmup_steps=up_steps,
                               momentum=self.ARCH["train"]["momentum"],
                               decay=final_decay)
+    from thop import profile
+
+    input = torch.randn(1, 5, 64, 2048).cuda()
+
+    flops, params = profile(self.model, inputs=(input,), verbose=False)
+    time_train = []
+    inputs = torch.randn(1, 5, 64, 2048).cuda()
+    outputs = self.model(inputs)
+    outputs = self.model(inputs)
+    outputs = self.model(inputs)
+
+    for i in range(50):
+        inputs = torch.randn(1, 5, 64, 2048).cuda()
+        with torch.no_grad():
+          start_time = time.time()
+          outputs = self.model(inputs)
+
+        torch.cuda.synchronize()  # wait for cuda to finish (cuda is asynchronous!)
+        fwt = time.time() - start_time
+        time_train.append(fwt)
+        print ("Forward time per img: %.3f (Mean: %.3f)" % (
+          fwt / 1, sum(time_train) / len(time_train) / 1))
+        print("Total number of flops (G): ", flops / 1000000000.)
+        time.sleep(0.35)
 
   @staticmethod
   def get_mpl_colormap(cmap_name):

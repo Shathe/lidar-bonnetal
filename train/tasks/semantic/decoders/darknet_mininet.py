@@ -20,8 +20,6 @@ class moduleERS(nn.Module):
 
         self.relu1 = nn.LeakyReLU(0.1)
         self.relu2 = nn.LeakyReLU(0.1)
-        self.dropout = nn.Dropout2d(dropprob)
-
     def forward(self, inputs):
         x = self.conv1(inputs)
         x = self.bn1(x)
@@ -29,12 +27,6 @@ class moduleERS(nn.Module):
 
         x = self.pointwise(x)
         x = self.bn(x)
-
-
-        if self.dropout.p != 0:
-            x = self.dropout(x)
-
-
         if x.shape[1] == inputs.shape[1]:
             return self.relu2(x)+ inputs
         else:
@@ -42,10 +34,10 @@ class moduleERS(nn.Module):
 
 
 class BasicBlock(nn.Module):
-    def __init__(self, inplanes, out_planes, dropprob=0):
+    def __init__(self, inplanes, out_planes):
         super(BasicBlock, self).__init__()
-        self.conv1 = moduleERS(inplanes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1, bias=False, dropprob=dropprob)
-        self.conv2 = moduleERS(out_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1, bias=False, dropprob=dropprob)
+        self.conv1 = moduleERS(inplanes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1, bias=False)
+        self.conv2 = moduleERS(out_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1, bias=False)
 
     def forward(self, x):
         out = self.conv1(x)
@@ -91,26 +83,26 @@ class Decoder(nn.Module):
         self.dec5 = self._make_dec_layer(BasicBlock,
                                          [self.backbone_feature_depth, 128],
                                          bn_d=self.bn_d,
-                                         stride=(self.strides[0], self.strides_2[0]), n_blocks=4, dropprob=0.10)
+                                         stride=(self.strides[0], self.strides_2[0]))
         self.dec4 = self._make_dec_layer(BasicBlock, [128, 64], bn_d=self.bn_d,
                                          stride=(self.strides[1], self.strides_2[1]))
-        self.dec3 = self._make_dec_layer(BasicBlock, [64, 64], bn_d=self.bn_d,
+        self.dec3 = self._make_dec_layer(BasicBlock, [64, 32], bn_d=self.bn_d,
                                          stride=(self.strides[2], self.strides_2[2]))
-        # self.dec2 = self._make_dec_layer(BasicBlock, [32, 32], bn_d=self.bn_d,
-        #                                  stride=(self.strides[3], self.strides_2[3]), do_block=False)
+        self.dec2 = self._make_dec_layer(BasicBlock, [32, 32], bn_d=self.bn_d,
+                                         stride=(self.strides[3], self.strides_2[3]), do_block=False)
         # self.dec1 = self._make_dec_layer(BasicBlock, [64, 32], bn_d=self.bn_d,
         #                                  stride=self.strides[4])
 
         # layer list to execute with skips
-        self.layers = [self.dec5, self.dec4, self.dec3]
+        self.layers = [self.dec5, self.dec4, self.dec3, self.dec2]
 
         # for a bit of fun
         self.dropout = nn.Dropout2d(self.drop_prob)
 
         # last channels
-        self.last_channels = 64
+        self.last_channels = 32
 
-    def _make_dec_layer(self, block, planes, bn_d=0.1, stride=2, n_blocks=1, dropprob=0):
+    def _make_dec_layer(self, block, planes, bn_d=0.1, stride=2, do_block=True):
         layers = []
 
         #  downsample
@@ -132,38 +124,34 @@ class Decoder(nn.Module):
             #                                               kernel_size=[kernel_1, kernel_2], stride=[stride_1, stride_2],
             #                                               padding=[padding_1, padding_2])))
         else:
-            layers.append(("conv", nn.Conv2d(planes[0], planes[0],
+            layers.append(("conv", nn.Conv2d(planes[0], planes[1],
                                              kernel_size=3, padding=1)))
 
         # layers.append(("bn", nn.BatchNorm2d(planes[1], momentum=bn_d)))
         # layers.append(("relu", nn.LeakyReLU(0.1)))
 
         #  blocks
-        for i in range(n_blocks - 1):
-            layers.append(("residual" + str(i), block(planes[0], planes[0], dropprob=dropprob)))
-
-
-        layers.append(("residual", block(planes[0], planes[1], dropprob=dropprob)))
+        if do_block:
+            layers.append(("residual", block(planes[0], planes[1])))
 
         return nn.Sequential(OrderedDict(layers))
 
     def run_layer(self, x, layer, skips, os, add_skip=True):
-
-        x = x + skips[os].detach()  # add skip
-
         feats = layer(x)  # up
-
+        if feats.shape[1] > x.shape[1]:
+            os //= 2  # match skip
+            if add_skip:
+                feats = feats + skips[os].detach()  # add skip
+            else:
+                print(feats.shape)
         x = feats
-        return x, skips, int(os/2)
+        return x, skips, os
 
     def forward(self, x, skips):
         os = self.backbone_OS
-        os /= 2
         # run layers
         x = nn.functional.interpolate(x, size=(x.shape[2], x.shape[3] * 2), mode='bilinear', align_corners=True)
         x, skips, os = self.run_layer(x, self.dec5, skips, os)
-
-
         x = nn.functional.interpolate(x, size=(x.shape[2], x.shape[3] * 2), mode='bilinear', align_corners=True)
         x, skips, os = self.run_layer(x, self.dec4, skips, os)
         x = nn.functional.interpolate(x, size=(x.shape[2] * 2, x.shape[3] * 2), mode='bilinear', align_corners=True)

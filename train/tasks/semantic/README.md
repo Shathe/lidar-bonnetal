@@ -26,7 +26,7 @@ $ ./visualize.py -d /home/snowflake/Downloads/SemanticKitti/data_odometry_velody
 To visualize the predictions (in this example sequence 00):
 
 ```sh
-$ ./visualize.py -d /home/snowflake/Downloads/SemanticKitti/data_odometry_velodyne/dataset/ -p /home/snowflake/Downloads/darknet53 -s 00
+$ ./visualize.py -d /home/snowflake/Downloads/SemanticKitti/data_odometry_velodyne/dataset/ -p /home/snowflake/Downloads/SemanticKitti/predictions/darknet53 -s 00
 ```
 
 ### Training
@@ -34,13 +34,13 @@ $ ./visualize.py -d /home/snowflake/Downloads/SemanticKitti/data_odometry_velody
 To train a network (from scratch):
 
 ```sh
-$ ./train.py -d /path/to/dataset -ac /config/arch/CHOICE.yaml -l /path/to/log
+$ ./train.py -d /home/snowflake/Downloads/SemanticKitti/data_odometry_velodyne/dataset -ac /config/arch/CHOICE.yaml -l /path/to/log
 ```
 
 To train a network (from pretrained model):
 
 ```
-$ ./train.py -d /path/to/dataset -ac /config/arch/CHOICE.yaml -dc /config/labels/CHOICE.yaml -l /path/to/log -p /path/to/pretrained
+$ ./train.py -d /home/snowflake/Downloads/SemanticKitti/data_odometry_velodyne/dataset -ac /config/arch/CHOICE.yaml -dc /config/labels/CHOICE.yaml -l /path/to/log -p /path/to/pretrained
 ```
 
 This will generate a tensorboard log, which can be visualized by running:
@@ -65,13 +65,13 @@ $ ./infer.py -d /home/snowflake/Downloads/SemanticKitti/data_odometry_velodyne/d
 To evaluate the overall IoU of the point clouds (of a specific split, which in semantic kitti can only be train and valid, since test is only run in our evaluation server):
 
 ```sh
-$ ./evaluate_iou.py -d /path/to/dataset -p /home/snowflake/Downloads/darknet53 --split valid
+$ ./evaluate_iou.py -d /home/snowflake/Downloads/SemanticKitti/data_odometry_velodyne/dataset -p /home/snowflake/Downloads/SemanticKitti/predictions/darknet53 --split valid
 ```
 
 To evaluate the border IoU of the point clouds (introduced in RangeNet++ paper):
 
 ```sh
-$ ./evaluate_biou.py -d /path/to/dataset -p /home/snowflake/Downloads/darknet53 --split valid --border 1 --conn 4
+$ ./evaluate_biou.py -d /home/snowflake/Downloads/SemanticKitti/data_odometry_velodyne/dataset -p /home/snowflake/Downloads/SemanticKitti/predictions/darknet53 --split valid --border 1 --conn 4
 ```
 
 ## Pre-trained Models

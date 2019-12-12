@@ -2,9 +2,22 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b2b16a10-fb6c-4860-a658-956037c47e34" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/train/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/train/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/train/backbones/darknet_original.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/train/tasks/semantic/decoders/darknet_mininet.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/train/tasks/semantic/decoders/darknet_original.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/backbones/darknet.py" beforeDir="false" afterPath="$PROJECT_DIR$/train/backbones/darknet.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/train/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/tasks/semantic/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/train/tasks/semantic/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/tasks/semantic/config/arch/darknet21.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/train/tasks/semantic/config/arch/darknet21.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/tasks/semantic/config/arch/darknet53-1024px.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/train/tasks/semantic/config/arch/darknet53-1024px.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/tasks/semantic/config/arch/darknet53-512px.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/train/tasks/semantic/config/arch/darknet53-512px.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/tasks/semantic/config/arch/darknet53-crf.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/train/tasks/semantic/config/arch/darknet53-crf.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/tasks/semantic/decoders/darknet.py" beforeDir="false" afterPath="$PROJECT_DIR$/train/tasks/semantic/decoders/darknet.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/tasks/semantic/modules/segmentator.py" beforeDir="false" afterPath="$PROJECT_DIR$/train/tasks/semantic/modules/segmentator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/tasks/semantic/modules/trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/train/tasks/semantic/modules/trainer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/tasks/semantic/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train/tasks/semantic/train.py" afterDir="false" />
     </list>
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -14,18 +27,30 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1U75GCPJIq5Rt1sQabfV36SV28c" />
-  <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
   </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
+  <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$USER_HOME$/Downloads/lidar-bonnetal" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/train/backbones" />
+      <recent name="$PROJECT_DIR$/train/tasks/semantic/decoders" />
+      <recent name="$PROJECT_DIR$/train/tasks/semantic/config/arch" />
+    </key>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
       <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
       </list>
     </option>
   </component>
@@ -47,10 +72,18 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
     </option>
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="743" y="297" width="424" height="484" key="FileChooserDialogImpl" timestamp="1576062793057">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="743" y="297" width="424" height="484" key="FileChooserDialogImpl/1920.0.3840.2160/0.27.1920.1053@0.27.1920.1053" timestamp="1576062793057" />
   </component>
 </project>

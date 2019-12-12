@@ -82,6 +82,7 @@ if __name__ == '__main__':
 
   # create log folder
   try:
+    print(FLAGS.log)
     if os.path.isdir(FLAGS.log):
       shutil.rmtree(FLAGS.log)
     os.makedirs(FLAGS.log)
