@@ -2,6 +2,7 @@ import os
 import numpy as np
 import torch
 from torch.utils.data import Dataset
+from torch.nn import functional as f
 from common.laserscan import LaserScan, SemLaserScan
 
 EXTENSIONS_SCAN = ['.bin']
@@ -167,8 +168,12 @@ class SemanticKitti(Dataset):
     proj = torch.cat([proj_range.unsqueeze(0).clone(),
                       proj_xyz.clone().permute(2, 0, 1),
                       proj_remission.unsqueeze(0).clone()])
+
+    proj_blocked = proj.unsqueeze(1) # Swap Batch and channel dimensions
+
     proj = (proj - self.sensor_img_means[:, None, None]
             ) / self.sensor_img_stds[:, None, None]
+
     proj = proj * proj_mask.float()
 
     # get name and sequence
@@ -180,8 +185,59 @@ class SemanticKitti(Dataset):
     # print("path_seq", path_seq)
     # print("path_name", path_name)
 
-    # return
-    return proj, proj_mask, proj_labels, unproj_labels, path_seq, path_name, proj_x, proj_y, proj_range, unproj_range, proj_xyz, unproj_xyz, proj_remission, unproj_remissions, unproj_n_points
+
+
+    # import cv2
+    # cv2.imwrite('/home/snowflake/Desktop/big.png', proj[0, :, :].numpy()*15)
+    # print('proj.shape')
+    # print(proj.shape)
+
+
+
+    n, c, h, w = proj_blocked.size()
+
+    windows_size = 4 # windows size
+    proj_chan_group_points = f.unfold(proj_blocked, kernel_size=windows_size, stride=windows_size)
+
+    projmask_chan_group_points = f.unfold(proj_mask.unsqueeze(0).unsqueeze(0).float(), kernel_size=windows_size, stride=windows_size)
+
+    # Get the mean point (taking apart non-valid points
+    proj_chan_group_points_sum = torch.sum(proj_chan_group_points, dim=1)
+    projmask_chan_group_points_sum = torch.sum(projmask_chan_group_points, dim=1)
+    proj_chan_group_points_mean = proj_chan_group_points_sum / projmask_chan_group_points_sum
+
+     # tile it for being able to substract it to the other points
+    tiled_proj_chan_group_points_mean = proj_chan_group_points_mean.unsqueeze(1).repeat(1, windows_size*windows_size, 1)
+
+    # remove nans due to empty blocks
+    is_nan = tiled_proj_chan_group_points_mean != tiled_proj_chan_group_points_mean
+    tiled_proj_chan_group_points_mean[is_nan] = 0.
+
+    # compute valid mask per point
+    tiled_projmask_chan_group_points = (1 - projmask_chan_group_points.repeat(n, 1, 1)).byte()
+
+    # substract mean point to points
+    proj_chan_group_points_relative = proj_chan_group_points - tiled_proj_chan_group_points_mean
+
+    # set to zero points which where non valid at the beginning
+    proj_chan_group_points_relative[tiled_projmask_chan_group_points] = 0.
+
+
+    # compute distance (radius) to mean point
+    # xyz_relative = proj_chan_group_points_relative[1:4,...]
+    # relative_distance = torch.norm(xyz_relative, dim=0).unsqueeze(0)
+
+
+    # NOW proj_chan_group_points_relative HAS Xr, Yr, Zr, Rr, Dr relative to the mean point
+    proj_norm_chan_group_points = f.unfold(proj.unsqueeze(1), kernel_size=windows_size, stride=windows_size)
+    # NOW proj_norm_chan_group_points HAS X, Y, Z, R, D. Now we have to concat them both
+    proj_chan_group_points_combined = torch.cat([proj_norm_chan_group_points, proj_chan_group_points_relative], dim=0)
+
+    # convert back to image for image-convolution-branch
+    proj = f.fold(proj_chan_group_points_combined, proj_blocked.shape[-2:], kernel_size=windows_size, stride=windows_size)
+    proj = proj.squeeze(1)
+
+    return proj, proj_mask, proj_labels, unproj_labels, path_seq, path_name, proj_x, proj_y, proj_range, unproj_range, proj_xyz, unproj_xyz, proj_remission, unproj_remissions, unproj_n_points, proj_chan_group_points_combined
 
   def __len__(self):
     return len(self.scan_files)

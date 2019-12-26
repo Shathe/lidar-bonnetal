@@ -73,13 +73,13 @@ class User():
       self.model.cuda()
 
   def infer(self):
-    # do train set
-    self.infer_subset(loader=self.parser.get_train_set(),
-                      to_orig_fn=self.parser.to_original)
-
+    # # do train set
+    # self.infer_subset(loader=self.parser.get_train_set(),
+    #                   to_orig_fn=self.parser.to_original)
+    #
     # do valid set
-    self.infer_subset(loader=self.parser.get_valid_set(),
-                      to_orig_fn=self.parser.to_original)
+    # self.infer_subset(loader=self.parser.get_valid_set(),
+    #                   to_orig_fn=self.parser.to_original)
     # do test set
     self.infer_subset(loader=self.parser.get_test_set(),
                       to_orig_fn=self.parser.to_original)
@@ -99,8 +99,10 @@ class User():
     with torch.no_grad():
       end = time.time()
 
-      for i, (proj_in, proj_mask, _, _, path_seq, path_name, p_x, p_y, proj_range, unproj_range, _, _, _, _, npoints) in enumerate(loader):
-        # first cut to rela size (batch size one allows it)
+      for i, (proj_in, proj_mask, _, _, path_seq, path_name, p_x, p_y, proj_range, unproj_range, _, _, _, _, npoints, proj_chan_group_points) in enumerate(loader):
+      # for i, (in_vol, proj_mask, proj_labels, _, path_seq, path_name, _, _, _, _, _, _, _, _, _, proj_chan_group_points) in enumerate(train_loader):
+
+          # first cut to rela size (batch size one allows it)
         p_x = p_x[0, :npoints]
         p_y = p_y[0, :npoints]
         proj_range = proj_range[0, :npoints]
@@ -110,6 +112,7 @@ class User():
 
         if self.gpu:
           proj_in = proj_in.cuda()
+          proj_chan_group_points = proj_chan_group_points.cuda()
           proj_mask = proj_mask.cuda()
           p_x = p_x.cuda()
           p_y = p_y.cuda()
@@ -118,7 +121,8 @@ class User():
             unproj_range = unproj_range.cuda()
 
         # compute output
-        proj_output = self.model(proj_in, proj_mask)
+        proj_output = self.model([proj_in, proj_chan_group_points], proj_mask)
+
         proj_argmax = proj_output[0].argmax(dim=0)
 
         if self.post:

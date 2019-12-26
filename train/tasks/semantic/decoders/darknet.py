@@ -44,8 +44,8 @@ class moduleERS(nn.Module):
 class BasicBlock(nn.Module):
     def __init__(self, inplanes, out_planes, dropprob=0):
         super(BasicBlock, self).__init__()
-        self.conv1 = moduleERS(inplanes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1, bias=False, dropprob=dropprob)
-        self.conv2 = moduleERS(out_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1, bias=False, dropprob=dropprob)
+        self.conv1 = moduleERS(inplanes, inplanes, kernel_size=3, stride=1, padding=1, dilation=1, bias=False, dropprob=dropprob)
+        self.conv2 = moduleERS(inplanes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1, bias=False, dropprob=dropprob)
 
     def forward(self, x):
         out = self.conv1(x)
@@ -88,13 +88,14 @@ class Decoder(nn.Module):
         print("Decoder strides: ", self.strides)
 
         # decoder
+        # LA BRANCH DE ALTO NIVEL SOLO PARA SKIP CONECTION: TENDRAS DOS SKIP CONECTIONS AL PRIMER NIVEL DEL DECODER.
         self.dec5 = self._make_dec_layer(BasicBlock,
-                                         [self.backbone_feature_depth, 128],
+                                         [self.backbone_feature_depth, 192],
                                          bn_d=self.bn_d,
-                                         stride=(self.strides[0], self.strides_2[0]), n_blocks=4, dropprob=0.10)
-        self.dec4 = self._make_dec_layer(BasicBlock, [128, 64], bn_d=self.bn_d,
+                                         stride=(self.strides[0], self.strides_2[0]), n_blocks=1)
+        self.dec4 = self._make_dec_layer(BasicBlock, [192, 128], bn_d=self.bn_d,
                                          stride=(self.strides[1], self.strides_2[1]))
-        self.dec3 = self._make_dec_layer(BasicBlock, [64, 64], bn_d=self.bn_d,
+        self.dec3 = self._make_dec_layer(BasicBlock, [128, 64], bn_d=self.bn_d,
                                          stride=(self.strides[2], self.strides_2[2]))
         # self.dec2 = self._make_dec_layer(BasicBlock, [32, 32], bn_d=self.bn_d,
         #                                  stride=(self.strides[3], self.strides_2[3]), do_block=False)
@@ -104,8 +105,6 @@ class Decoder(nn.Module):
         # layer list to execute with skips
         self.layers = [self.dec5, self.dec4, self.dec3]
 
-        # for a bit of fun
-        self.dropout = nn.Dropout2d(self.drop_prob)
 
         # last channels
         self.last_channels = 64
@@ -147,9 +146,12 @@ class Decoder(nn.Module):
 
         return nn.Sequential(OrderedDict(layers))
 
-    def run_layer(self, x, layer, skips, os, add_skip=True):
+    def run_layer(self, x, layer, skips, os, detach_skip = True):
+        if detach_skip:
+            x = x + skips[os].detach()  # add skip (detach is for non-gradient)
+        else:
+            x = x + skips[os]
 
-        x = x + skips[os].detach()  # add skip
 
         feats = layer(x)  # up
 
@@ -163,16 +165,20 @@ class Decoder(nn.Module):
         x = nn.functional.interpolate(x, size=(x.shape[2], x.shape[3] * 2), mode='bilinear', align_corners=True)
         x, skips, os = self.run_layer(x, self.dec5, skips, os)
 
-
         x = nn.functional.interpolate(x, size=(x.shape[2], x.shape[3] * 2), mode='bilinear', align_corners=True)
+
         x, skips, os = self.run_layer(x, self.dec4, skips, os)
+
+        # x = x + skips[0].detach()  # add skip projection (detach is for non-gradient)
+
         x = nn.functional.interpolate(x, size=(x.shape[2] * 2, x.shape[3] * 2), mode='bilinear', align_corners=True)
 
-        x, skips, os = self.run_layer(x, self.dec3, skips, os)
+
+        x, skips, os = self.run_layer(x, self.dec3, skips, os, detach_skip = False)
         x = nn.functional.interpolate(x, size=(x.shape[2] * 2, x.shape[3] * 2), mode='bilinear', align_corners=True)
 
         # x, skips, os = self.run_layer(x, self.dec2, skips, os)
-        # x, skips, os = self.run_layer(x, self.dec1, skips, os, add_skip=False)
+        # x, skips, os = self.run_layer(x, self.dec1, skips, os)
 
         return x
 

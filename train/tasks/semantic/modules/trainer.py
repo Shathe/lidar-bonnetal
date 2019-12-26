@@ -156,20 +156,21 @@ class Trainer():
                               decay=final_decay)
     from thop import profile
 
-    input = torch.randn(1, 5, 64, 2048).cuda()
+    inputs = torch.randn(1, 10, 64, 2048).cuda()
+    inputs_points = torch.randn(1, 10, 16, 8192).cuda()
 
-    flops, params = profile(self.model, inputs=(input,), verbose=False)
+    flops, params = profile(self.model, inputs=([inputs, inputs_points],), verbose=False)
     time_train = []
-    inputs = torch.randn(1, 5, 64, 2048).cuda()
-    outputs = self.model(inputs)
-    outputs = self.model(inputs)
-    outputs = self.model(inputs)
+    outputs = self.model([inputs, inputs_points])
+    outputs = self.model([inputs, inputs_points])
 
-    for i in range(50):
-        inputs = torch.randn(1, 5, 64, 2048).cuda()
+    for i in range(20):
+        inputs = torch.randn(1, 10, 64, 2048).cuda()
+        inputs_points = torch.randn(1, 10, 16, 8192).cuda()
+
         with torch.no_grad():
           start_time = time.time()
-          outputs = self.model(inputs)
+          outputs = self.model([inputs, inputs_points])
 
         torch.cuda.synchronize()  # wait for cuda to finish (cuda is asynchronous!)
         fwt = time.time() - start_time
@@ -177,7 +178,7 @@ class Trainer():
         print ("Forward time per img: %.3f (Mean: %.3f)" % (
           fwt / 1, sum(time_train) / len(time_train) / 1))
         print("Total number of flops (G): ", flops / 1000000000.)
-        time.sleep(0.35)
+        time.sleep(0.3)
 
   @staticmethod
   def get_mpl_colormap(cmap_name):
@@ -329,17 +330,18 @@ class Trainer():
     model.train()
 
     end = time.time()
-    for i, (in_vol, proj_mask, proj_labels, _, path_seq, path_name, _, _, _, _, _, _, _, _, _) in enumerate(train_loader):
+    for i, (in_vol, proj_mask, proj_labels, _, path_seq, path_name, _, _, _, _, _, _, _, _, _, proj_chan_group_points) in enumerate(train_loader):
         # measure data loading time
       data_time.update(time.time() - end)
       if not self.multi_gpu and self.gpu:
         in_vol = in_vol.cuda()
+        proj_chan_group_points = proj_chan_group_points.cuda()
         proj_mask = proj_mask.cuda()
       if self.gpu:
         proj_labels = proj_labels.cuda(non_blocking=True).long()
 
       # compute output
-      output = model(in_vol, proj_mask)
+      output = model([in_vol, proj_chan_group_points], proj_mask)
       loss = criterion(torch.log(output.clamp(min=1e-8)), proj_labels)
 
       # compute gradient and do SGD step
@@ -359,6 +361,7 @@ class Trainer():
         evaluator.addBatch(argmax, proj_labels)
         accuracy = evaluator.getacc()
         jaccard, class_jaccard = evaluator.getIoU()
+
       losses.update(loss.item(), in_vol.size(0))
       acc.update(accuracy.item(), in_vol.size(0))
       iou.update(jaccard.item(), in_vol.size(0))
@@ -428,15 +431,16 @@ class Trainer():
 
     with torch.no_grad():
       end = time.time()
-      for i, (in_vol, proj_mask, proj_labels, _, path_seq, path_name, _, _, _, _, _, _, _, _, _) in enumerate(val_loader):
+      for i, (in_vol, proj_mask, proj_labels, _, path_seq, path_name, _, _, _, _, _, _, _, _, _, proj_chan_group_points) in enumerate(val_loader):
         if not self.multi_gpu and self.gpu:
           in_vol = in_vol.cuda()
+          proj_chan_group_points = proj_chan_group_points.cuda()
           proj_mask = proj_mask.cuda()
         if self.gpu:
           proj_labels = proj_labels.cuda(non_blocking=True).long()
 
         # compute output
-        output = model(in_vol, proj_mask)
+        output = model([in_vol, proj_chan_group_points], proj_mask)
         loss = criterion(torch.log(output.clamp(min=1e-8)), proj_labels)
 
         # measure accuracy and record loss

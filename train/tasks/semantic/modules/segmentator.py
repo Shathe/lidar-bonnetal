@@ -29,11 +29,19 @@ class Segmentator(nn.Module):
                         self.backbone.get_input_depth(),
                         self.ARCH["dataset"]["sensor"]["img_prop"]["height"],
                         self.ARCH["dataset"]["sensor"]["img_prop"]["width"]))
+    w_size = 4
+    stub_points = torch.zeros((1,
+                        self.backbone.get_input_depth(),
+                        w_size * w_size,
+                        int(self.ARCH["dataset"]["sensor"]["img_prop"]["width"] * self.ARCH["dataset"]["sensor"]["img_prop"]["height"] / w_size / w_size)))
+
+
 
     if torch.cuda.is_available():
       stub = stub.cuda()
+      stub_points = stub_points.cuda()
       self.backbone.cuda()
-    _, stub_skips = self.backbone(stub)
+    _, stub_skips = self.backbone([stub, stub_points])
 
     decoderModule = imp.load_source("decoderModule",
                                     booger.TRAIN_PATH + '/tasks/semantic/decoders/' +
@@ -43,8 +51,7 @@ class Segmentator(nn.Module):
                                          OS=self.ARCH["backbone"]["OS"],
                                          feature_depth=self.backbone.get_last_depth())
 
-    self.head = nn.Sequential(nn.Dropout2d(p=ARCH["head"]["dropout"]),
-                              nn.Conv2d(self.decoder.get_last_depth(),
+    self.head = nn.Sequential(nn.Conv2d(self.decoder.get_last_depth(),
                                         self.nclasses, kernel_size=3,
                                         stride=1, padding=1))
 
