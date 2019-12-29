@@ -163,11 +163,11 @@ class Decoder(nn.Module):
         os /= 2
         # run layers
         x = nn.functional.interpolate(x, size=(x.shape[2], x.shape[3] * 2), mode='bilinear', align_corners=True)
-        x, skips, os = self.run_layer(x, self.dec5, skips, os)
+        x, skips, os = self.run_layer(x, self.dec5, skips, os, detach_skip = False) # No son early layers y no  hace falta cortar el skip conection backprop
 
         x = nn.functional.interpolate(x, size=(x.shape[2], x.shape[3] * 2), mode='bilinear', align_corners=True)
 
-        x, skips, os = self.run_layer(x, self.dec4, skips, os)
+        x, skips, os = self.run_layer(x, self.dec4, skips, os, detach_skip = False)
 
         # x = x + skips[0].detach()  # add skip projection (detach is for non-gradient)
 
