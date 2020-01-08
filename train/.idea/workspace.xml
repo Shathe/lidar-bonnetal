@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f11068d9-25fe-435b-9ed8-58e5e6e71977" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../.idea/lidar-bonnetal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/lidar-bonnetal.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backbones/darknet.py" beforeDir="false" afterPath="$PROJECT_DIR$/backbones/darknet.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tasks/semantic/config/arch/darknet21.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/semantic/config/arch/darknet21.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tasks/semantic/dataset/kitti/parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/semantic/dataset/kitti/parser.py" afterDir="false" />
@@ -12,6 +10,7 @@
       <change beforePath="$PROJECT_DIR$/tasks/semantic/modules/segmentator.py" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/semantic/modules/segmentator.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tasks/semantic/modules/trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/semantic/modules/trainer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tasks/semantic/modules/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/semantic/modules/user.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tasks/semantic/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/semantic/train.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -132,5 +131,9 @@
       <screen x="1920" y="0" width="3840" height="2160" />
     </state>
     <state width="2512" height="444" key="GridCell.Tab.0.right/1920.0.3840.2160/0.27.1920.1053@1920.0.3840.2160" timestamp="1577059546770" />
+    <state x="3868" y="697" width="866" height="781" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1577985078376">
+      <screen x="1920" y="0" width="3840" height="2160" />
+    </state>
+    <state x="3868" y="697" width="866" height="781" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/1920.0.3840.2160/0.27.1920.1053@1920.0.3840.2160" timestamp="1577985078376" />
   </component>
 </project>

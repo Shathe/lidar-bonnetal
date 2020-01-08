@@ -29,19 +29,29 @@ class Segmentator(nn.Module):
                         self.backbone.get_input_depth(),
                         self.ARCH["dataset"]["sensor"]["img_prop"]["height"],
                         self.ARCH["dataset"]["sensor"]["img_prop"]["width"]))
-    w_size = 4
+    w_size = 8
     stub_points = torch.zeros((1,
                         self.backbone.get_input_depth(),
                         w_size * w_size,
                         int(self.ARCH["dataset"]["sensor"]["img_prop"]["width"] * self.ARCH["dataset"]["sensor"]["img_prop"]["height"] / w_size / w_size)))
 
 
-
+    representations = {}
+    representations['image'] =[]
+    representations['points'] =[]
+    representations['points'].append(torch.randn(1, 10, 9, 131072).cuda())
+    representations['points'].append(torch.randn(1, 10, 9, 32768).cuda())
+    representations['points'].append(torch.randn(1, 10, 9, 8192).cuda())
+    representations['points'].append(torch.randn(1, 10, 9, 2048).cuda())
+    representations['image'].append(torch.randn(1, 10, 64, 2048).cuda())
+    representations['image'].append(torch.randn(1, 10, 32, 1024).cuda())
+    representations['image'].append(torch.randn(1, 10, 16, 512).cuda())
+    representations['image'].append(torch.randn(1, 10, 8, 256).cuda())
     if torch.cuda.is_available():
       stub = stub.cuda()
       stub_points = stub_points.cuda()
       self.backbone.cuda()
-    _, stub_skips = self.backbone([stub, stub_points])
+    _, stub_skips = self.backbone([stub, representations])
 
     decoderModule = imp.load_source("decoderModule",
                                     booger.TRAIN_PATH + '/tasks/semantic/decoders/' +

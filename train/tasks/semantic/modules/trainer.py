@@ -76,7 +76,7 @@ class Trainer():
       x_cl = self.parser.to_xentropy(cl)  # map actual class to xentropy class
       content[x_cl] += freq
     self.loss_w = 1 / (content + epsilon_w)   # get weights
-    self.loss_w = np.power(self.loss_w, 0.50)
+    # self.loss_w = np.power(self.loss_w, 0.75)
     for x_cl, w in enumerate(self.loss_w):  # ignore the ones necessary to ignore
       if DATA["learning_ignore"][x_cl]:
         # don't weigh
@@ -102,13 +102,14 @@ class Trainer():
       self.gpu = True
       self.n_gpus = 1
       self.model.cuda()
-    if torch.cuda.is_available() and torch.cuda.device_count() > 1:
-      print("Let's use", torch.cuda.device_count(), "GPUs!")
-      self.model = nn.DataParallel(self.model)   # spread in gpus
-      self.model = convert_model(self.model).cuda()  # sync batchnorm
-      self.model_single = self.model.module  # single model to get weight names
-      self.multi_gpu = True
-      self.n_gpus = torch.cuda.device_count()
+
+    # if torch.cuda.is_available() and torch.cuda.device_count() > 1:
+    #   print("Let's use", torch.cuda.device_count(), "GPUs!")
+    #   self.model = nn.DataParallel(self.model)   # spread in gpus
+    #   self.model = convert_model(self.model).cuda()  # sync batchnorm
+    #   self.model_single = self.model.module  # single model to get weight names
+    #   self.multi_gpu = True
+    #   self.n_gpus = torch.cuda.device_count()
 
     # loss
     if "loss" in self.ARCH["train"].keys() and self.ARCH["train"]["loss"] == "xentropy":
@@ -157,20 +158,31 @@ class Trainer():
     from thop import profile
 
     inputs = torch.randn(1, 10, 64, 2048).cuda()
-    inputs_points = torch.randn(1, 10, 16, 8192).cuda()
 
-    flops, params = profile(self.model, inputs=([inputs, inputs_points],), verbose=False)
+    representations = {}
+    representations['image'] =[]
+    representations['points'] =[]
+    representations['points'].append(torch.randn(1, 10, 9, 131072).cuda())
+    representations['points'].append(torch.randn(1, 10, 9, 32768).cuda())
+    representations['points'].append(torch.randn(1, 10, 9, 8192).cuda())
+    representations['points'].append(torch.randn(1, 10, 9, 2048).cuda())
+    representations['image'].append(torch.randn(1, 10, 64, 2048).cuda())
+    representations['image'].append(torch.randn(1, 10, 32, 1024).cuda())
+    representations['image'].append(torch.randn(1, 10, 16, 512).cuda())
+    representations['image'].append(torch.randn(1, 10, 8, 256).cuda())
+
+    flops, params = profile(self.model, inputs=([inputs, representations],), verbose=False)
     time_train = []
-    outputs = self.model([inputs, inputs_points])
-    outputs = self.model([inputs, inputs_points])
+    outputs = self.model([inputs, representations])
+    outputs = self.model([inputs, representations])
 
     for i in range(20):
         inputs = torch.randn(1, 10, 64, 2048).cuda()
-        inputs_points = torch.randn(1, 10, 16, 8192).cuda()
+        inputs_points = torch.randn(1, 10, 64, 8192).cuda()
 
         with torch.no_grad():
           start_time = time.time()
-          outputs = self.model([inputs, inputs_points])
+          outputs = self.model([inputs, representations])
 
         torch.cuda.synchronize()  # wait for cuda to finish (cuda is asynchronous!)
         fwt = time.time() - start_time
@@ -248,6 +260,8 @@ class Trainer():
       groups = self.optimizer.param_groups
       for name, g in zip(self.lr_group_names, groups):
         self.info[name] = g['lr']
+
+
 
       # train for 1 epoch
       acc, iou, loss, update_mean = self.train_epoch(train_loader=self.parser.get_train_set(),
@@ -330,18 +344,23 @@ class Trainer():
     model.train()
 
     end = time.time()
-    for i, (in_vol, proj_mask, proj_labels, _, path_seq, path_name, _, _, _, _, _, _, _, _, _, proj_chan_group_points) in enumerate(train_loader):
+    for i, (in_vol, proj_mask, proj_labels, _, path_seq, path_name, _, _, _, _, _, _, _, _, _, representations) in enumerate(train_loader):
         # measure data loading time
       data_time.update(time.time() - end)
       if not self.multi_gpu and self.gpu:
         in_vol = in_vol.cuda()
-        proj_chan_group_points = proj_chan_group_points.cuda()
+
+        for i in range(len(representations['points'])):
+            representations['points'][i] = representations['points'][i].cuda()
+        for i in range(len(representations['image'])):
+            representations['image'][i] = representations['image'][i].cuda()
+
         proj_mask = proj_mask.cuda()
       if self.gpu:
         proj_labels = proj_labels.cuda(non_blocking=True).long()
 
       # compute output
-      output = model([in_vol, proj_chan_group_points], proj_mask)
+      output = model([in_vol, representations], proj_mask)
       loss = criterion(torch.log(output.clamp(min=1e-8)), proj_labels)
 
       # compute gradient and do SGD step
@@ -431,16 +450,22 @@ class Trainer():
 
     with torch.no_grad():
       end = time.time()
-      for i, (in_vol, proj_mask, proj_labels, _, path_seq, path_name, _, _, _, _, _, _, _, _, _, proj_chan_group_points) in enumerate(val_loader):
+      for i, (in_vol, proj_mask, proj_labels, _, path_seq, path_name, _, _, _, _, _, _, _, _, _, representations) in enumerate(val_loader):
         if not self.multi_gpu and self.gpu:
           in_vol = in_vol.cuda()
-          proj_chan_group_points = proj_chan_group_points.cuda()
           proj_mask = proj_mask.cuda()
+
+        for i in range(len(representations['points'])):
+            representations['points'][i] = representations['points'][i].cuda()
+        for i in range(len(representations['image'])):
+            representations['image'][i] = representations['image'][i].cuda()
+
+
         if self.gpu:
           proj_labels = proj_labels.cuda(non_blocking=True).long()
 
         # compute output
-        output = model([in_vol, proj_chan_group_points], proj_mask)
+        output = model([in_vol, representations], proj_mask)
         loss = criterion(torch.log(output.clamp(min=1e-8)), proj_labels)
 
         # measure accuracy and record loss

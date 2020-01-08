@@ -111,6 +111,9 @@ if __name__ == '__main__':
     print("Error copying files, check permissions. Exiting...")
     quit()
 
+  n_gpu = 0
+  os.environ["CUDA_VISIBLE_DEVICES"] = str(n_gpu)
+
   # create trainer and start the training
   trainer = Trainer(ARCH, DATA, FLAGS.dataset, FLAGS.log, FLAGS.pretrained)
   trainer.train()

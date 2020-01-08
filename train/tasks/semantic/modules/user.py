@@ -99,7 +99,7 @@ class User():
     with torch.no_grad():
       end = time.time()
 
-      for i, (proj_in, proj_mask, _, _, path_seq, path_name, p_x, p_y, proj_range, unproj_range, _, _, _, _, npoints, proj_chan_group_points) in enumerate(loader):
+      for i, (proj_in, proj_mask, _, _, path_seq, path_name, p_x, p_y, proj_range, unproj_range, _, _, _, _, npoints, representations) in enumerate(loader):
       # for i, (in_vol, proj_mask, proj_labels, _, path_seq, path_name, _, _, _, _, _, _, _, _, _, proj_chan_group_points) in enumerate(train_loader):
 
           # first cut to rela size (batch size one allows it)
@@ -112,7 +112,11 @@ class User():
 
         if self.gpu:
           proj_in = proj_in.cuda()
-          proj_chan_group_points = proj_chan_group_points.cuda()
+          for i in range(len(representations['points'])):
+              representations['points'][i] = representations['points'][i].cuda()
+          for i in range(len(representations['image'])):
+              representations['image'][i] = representations['image'][i].cuda()
+
           proj_mask = proj_mask.cuda()
           p_x = p_x.cuda()
           p_y = p_y.cuda()
@@ -121,7 +125,7 @@ class User():
             unproj_range = unproj_range.cuda()
 
         # compute output
-        proj_output = self.model([proj_in, proj_chan_group_points], proj_mask)
+        proj_output = self.model([proj_in, representations], proj_mask)
 
         proj_argmax = proj_output[0].argmax(dim=0)
 
