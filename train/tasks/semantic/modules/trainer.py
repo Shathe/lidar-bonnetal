@@ -76,7 +76,7 @@ class Trainer():
       x_cl = self.parser.to_xentropy(cl)  # map actual class to xentropy class
       content[x_cl] += freq
     self.loss_w = 1 / (content + epsilon_w)   # get weights
-    # self.loss_w = np.power(self.loss_w, 0.75)
+    # self.loss_w = np.power(self.loss_w, 0.50)
     for x_cl, w in enumerate(self.loss_w):  # ignore the ones necessary to ignore
       if DATA["learning_ignore"][x_cl]:
         # don't weigh

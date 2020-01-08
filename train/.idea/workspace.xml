@@ -2,15 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f11068d9-25fe-435b-9ed8-58e5e6e71977" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backbones/darknet.py" beforeDir="false" afterPath="$PROJECT_DIR$/backbones/darknet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tasks/semantic/config/arch/darknet21.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/semantic/config/arch/darknet21.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tasks/semantic/dataset/kitti/parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/semantic/dataset/kitti/parser.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tasks/semantic/decoders/darknet.py" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/semantic/decoders/darknet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tasks/semantic/modules/segmentator.py" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/semantic/modules/segmentator.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tasks/semantic/modules/trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/semantic/modules/trainer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tasks/semantic/modules/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/semantic/modules/user.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tasks/semantic/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/semantic/train.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
